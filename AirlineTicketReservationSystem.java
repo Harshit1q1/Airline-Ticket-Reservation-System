@@ -116,7 +116,7 @@ public class AirlineTicketReservationSystem {
                         } else {
                             System.out.println("\nSelected Flight :");
                             flt[tkt].getroute();
-                            arr = seatAvailability(sc);
+                            arr = seatAvailability(sc, rand);
                             if (arr[2] == 1) {
                                 if (arr[1] == 0) {
                                     section = "Economy Class";
@@ -146,7 +146,6 @@ public class AirlineTicketReservationSystem {
                             }
                         }
                     }
-
                     else if (depr == arvl)
                         System.out.println("\n\nError! You have entered same Departure and Arrival city!!");
                     else
@@ -237,6 +236,7 @@ public class AirlineTicketReservationSystem {
         int freeEconomySeats = rand.nextInt(EconomySeats);
         int freeFirstclassSeats = rand.nextInt(FirstclassSeats);
         int totalfreeSeats = freeEconomySeats + freeFirstclassSeats;
+
         System.out.println("\n\nTotal Available Seats are : " + totalfreeSeats);
         System.out.println("Available  Economy Seats are : " + freeEconomySeats);
         System.out.println("Available First Class Seats are : " + freeFirstclassSeats);
@@ -245,6 +245,7 @@ public class AirlineTicketReservationSystem {
         System.out.println("To book a First class Ticket Enter 1 : ");
         int choice = sc.nextInt();
         sc.nextLine();
+
         if (choice == 0) {
             System.out.print("\n\nHow many Tickets do you want to book : ");
             int tnum1 = sc.nextInt();
@@ -255,11 +256,9 @@ public class AirlineTicketReservationSystem {
                 seat[0] = bookedEconomyclass;
                 seat[1] = 0;
                 seat[2] = 1;
-
             } else {
                 System.out.println("Enter Valid Number Of Tickets!!");
             }
-
         } else if (choice == 1) {
             System.out.print("\nHow many Tickets do you want to book : ");
             int tnum2 = sc.nextInt();
