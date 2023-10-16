@@ -3,24 +3,25 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.HashSet;
 
 public class AirlineTicketReservationSystem {
 	public static void main(String[] args) {
-		Random rand = new Random();
 		Scanner sc = new Scanner(System.in);
 
         LocalDate dt = LocalDate.now();
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        String pdate = dt.format(df);
+        String presentDate = dt.format(df);
 
-        LocalDate dt_next = dt.plusMonths(3);
-        String nextdate = dt_next.format(df);
+        LocalDate dtNext = dt.plusMonths(3);
+        String nextDate = dtNext.format(df);
 
         int op = 1, cnf, pmt, id = 0, flag = 0;
 
         String section = new String();
-        String[] city = new String[] { "Delhi", "Mumbai", "Chennai", "Kolkata" };
-        String[] airporttype = new String[] { "Single", "Multihop" };
+        String[] city = {"Delhi", "Mumbai", "Chennai", "Kolkata"};
+        String[] airportType = new String[] {"Single", "Multihop"};
         int[] arr = new int[2];
         int[] mark = new int[2];
 
@@ -28,54 +29,20 @@ public class AirlineTicketReservationSystem {
         System.out.println("--------WELCOME TO SPICEJET AIRLINE TICKET RESERVATION CENTER--------");
         System.out.println("---------------------------------------------------------------------");
         System.out.println("For Flight Booking of : Delhi-Mumbai-Chennai-Kolkata");
-        System.out.println("Book your advance tickets between " + pdate + " to " + nextdate + " now.\n");
+        System.out.println("Book your advance tickets between " + presentDate + " to " + nextDate + " now.\n");
 
-        Route[] flt = new Route[20];
         Aircraft[] acft = new Aircraft[5];
-        Ticket[] tck = new Ticket[10];
+        initializeAircrafts(acft);
+        
+        int totalRoutes = 20;
+        Route[] flt = new Route[totalRoutes];
+        initializeFlightRoutes(flt, totalRoutes, city);
 
-        for (int i = 0; i < 20; i++)
-            flt[i] = new Route();
-        for (int i = 0; i < 5; i++)
-            acft[i] = new Aircraft();
+        Ticket[] tck = new Ticket[10];
         for (int i = 0; i < 10; i++) {
             tck[i] = new Ticket();
-            tck[i].ticket = 111;
+            tck[i].ticketId = 111;
         }
-
-        acft[0].setdetails("Airbus A320-200", "passenger", 180, 730);
-        acft[1].setdetails("Boeing 737-700", "passenger", 132, 510);
-        acft[2].setdetails("Airbus A330-900neo", "passenger", 210, 650);
-        acft[3].setdetails("Boeing 737-900", "passenger", 140, 580);
-        acft[4].setdetails("Airbus A340-300F", "passenger", 126, 850);
-
-        // mumbai-chennai = 1025km
-        // mumbai-delhi = 1166km
-        // mumbai-kolkata = 1664km
-        // delhi-kolkata = 1304km
-        // delhi-chennai = 1757km
-        // kolkata-chennai = 1363km
-
-        flt[0].setroute("moderate", 4531, "Delhi", "Mumbai", "11:00-AM", 4450, 5);
-        flt[1].setroute("moderate", 1328, "Delhi", "Mumbai", "04:30-PM", 4000, 5);
-        flt[2].setroute("busy", 5214, "Mumbai", "Delhi", "10:45-AM", 5100, 4);
-        flt[3].setroute("busy", 4589, "Mumbai", "Delhi", "03:00-PM", 4100, 6);
-        flt[4].setroute("low", 7842, "Delhi", "Chennai", "11:45-AM", 9000, 6);
-        flt[5].setroute("low", 1310, "Delhi", "Chennai", "06:00-PM", 9310, 7);
-        flt[6].setroute("low", 8659, "Chennai", "Delhi", "10:00-PM", 8420, 4);
-        flt[7].setroute("moderate", 3162, "Delhi", "Kolkata", "10:30-AM", 5560, 5);
-        flt[8].setroute("low", 7159, "Kolkata", "Delhi", "09:50-AM", 6120, 5);
-        flt[9].setroute("moderate", 5214, "Mumbai", "Kolkata", "12:00-AM", 5700, 6);
-        flt[10].setroute("moderate", 1159, "Mumbai", "Kolkata", "07:00-PM", 6100, 4);
-        flt[11].setroute("busy", 5326, "Kolkata", "Mumbai", "02:00-PM", 5990, 7);
-        flt[12].setroute("busy", 8832, "Kolkata", "Mumbai", "09:00-PM", 6150, 4);
-        flt[13].setroute("busy", 5214, "Mumbai", "Chennai", "08:00-AM", 4090, 5);
-        flt[14].setroute("moderate", 1453, "Mumbai", "Chennai", "10:00-PM", 5130, 5);
-        flt[15].setroute("low", 6432, "Chennai", "Mumbai", "01:00-PM", 9150, 7);
-        flt[16].setroute("low", 8937, "Chennai", "Mumbai", "11:35-PM", 8430, 5);
-        flt[17].setroute("busy", 8659, "Chennai", "Kolkata", "10:00-AM", 4520, 6);
-        flt[18].setroute("moderate", 8659, "Chennai", "Kolkata", "09:00-PM", 4130, 4);
-        flt[19].setroute("low", 5326, "Kolkata", "Chennai", "02:00-PM", 5990, 6);
 
         do {
             System.out.println("1.Flight Booking\t\t2.Cancellation of Ticket\t\t3.To check details of Reserved Ticket");
@@ -94,11 +61,11 @@ public class AirlineTicketReservationSystem {
                     sc.nextLine();
 
                     if (depr >= 0 && depr < 4 && arvl >= 0 && arvl < 4 && depr != arvl) {        
-                        String date = getTravelDate(sc, pdate, nextdate, df);
+                        String date = getTravelDate(sc, presentDate, nextDate, df);
 
                         System.out.printf("\n-----------------Available Flights :------------------\n\n");
                         for (int i = 0; i < 20; i++) {
-                            if ((flt[i].src.compareTo(city[depr]) == 0) && (flt[i].dst.compareTo(city[arvl]) == 0)) {
+                            if ((flt[i].src.compareTo(city[depr]) == 0) && (flt[i].dest.compareTo(city[arvl]) == 0)) {
                                 System.out.println("Press  " + i);
                                 flt[i].getroute();
                                 acft[i % 5].getdetails();
@@ -116,7 +83,7 @@ public class AirlineTicketReservationSystem {
                         } else {
                             System.out.println("\nSelected Flight :");
                             flt[tkt].getroute();
-                            arr = seatAvailability(sc, rand);
+                            arr = seatAvailability(sc);
                             if (arr[2] == 1) {
                                 if (arr[1] == 0) {
                                     section = "Economy Class";
@@ -158,7 +125,7 @@ public class AirlineTicketReservationSystem {
                     sc.nextLine();
                     flag = 0;
                     for (int i = 0; i < 10; i++) {
-                        if (del == tck[i].ticket) {
+                        if (del == tck[i].ticketId) {
                             System.out.println("\n----------------Your Ticket Details--------------");
                             tck[del].getticket();
                             flt[tck[del].code].getroute();
@@ -167,7 +134,7 @@ public class AirlineTicketReservationSystem {
                             sc.nextLine();
                             flag = 1;
                             if (d == 1) {
-                                tck[del].ticket = 111;
+                                tck[del].ticketId = 111;
                                 System.out.println("\nYour Ticket has been cancelled Successfully.");
                                 System.out.println("You will get Refund Amount within two days.\n\n");
                             }
@@ -182,18 +149,18 @@ public class AirlineTicketReservationSystem {
                     System.out.print("Enter your Ticket Id : ");
                     int find = sc.nextInt();
                     sc.nextLine();
-                    int temp1 = rand.nextInt(2);
-                    int temp2 = rand.nextInt(2);
+                    int temp1 = generateRandomNumber(2);
+                    int temp2 = generateRandomNumber(2);
                     flag = 0;
                     for (int i = 0; i < 10; i++) {
-                        if (find == tck[i].ticket) {
+                        if (find == tck[i].ticketId) {
                             System.out.println();
                             System.out.println();
                             System.out.println();
                             System.out.print("Your flight will take off from " + flt[tck[find].code].src);
-                            System.out.println(" airport which is a " + airporttype[temp1] + " runway airport.");
-                            System.out.print("Your flight will land on " + flt[tck[find].code].dst);
-                            System.out.println(" airport which is a " + airporttype[temp2] + " runway airport.");
+                            System.out.println(" airport which is a " + airportType[temp1] + " runway airport.");
+                            System.out.print("Your flight will land on " + flt[tck[find].code].dest);
+                            System.out.println(" airport which is a " + airportType[temp2] + " runway airport.");
                             System.out.println("\n----------------Your Ticket Details--------------");
                             tck[find].getticket();
                             System.out.println();
@@ -204,7 +171,7 @@ public class AirlineTicketReservationSystem {
                         }
                     }
                     if (flag == 0) {
-                        System.out.println("No such ticket exist of your entered Ticket Id!!");
+                        System.out.println("No such ticket exist of your entered Ticket Id!");
                     }
                     break;
 
@@ -225,19 +192,94 @@ public class AirlineTicketReservationSystem {
         sc.close();
 	}
 
-	public static int[] seatAvailability(Scanner sc, Random rand) {
-        int[] seat = new int[3];
-        int bookedEconomyclass, bookedFirstclass;
+    public static void initializeAircrafts(Aircraft[] acft) {
+        for (int i = 0; i < 5; i++)
+            acft[i] = new Aircraft();
 
-        int totalSeats = (int) (Math.random() * (31) + 30);
+        acft[0].setdetails("Airbus A320-200", "passenger", 180, 730);
+        acft[1].setdetails("Boeing 737-700", "passenger", 132, 510);
+        acft[2].setdetails("Airbus A330-900neo", "passenger", 210, 650);
+        acft[3].setdetails("Boeing 737-900", "passenger", 140, 580);
+        acft[4].setdetails("Airbus A340-300F", "passenger", 126, 850);
+    }
+
+    public static int generateRandomNumber(int maxNumber) {
+        Random random = new Random();
+        return random.nextInt(maxNumber+1);
+    }
+
+    public static int generateRandomNumber(int minNumber, int maxNumber) {
+        Random random = new Random();
+        return minNumber + random.nextInt(maxNumber-minNumber+1);
+    }
+
+    public static int[] generateRandomArray(int totalRoutes, int minNumber, int maxNumber) {
+        int[] routeCodes = new int[totalRoutes];
+        Set<Integer> uniqueNumbers = new HashSet<>();
+
+        while (uniqueNumbers.size() < totalRoutes) {
+            int randomNumber = generateRandomNumber(minNumber, maxNumber);
+            uniqueNumbers.add(randomNumber);
+        }
+
+        int index = 0;
+        for (int number : uniqueNumbers) {
+            routeCodes[index] = number;
+            index++;
+        }
+        return routeCodes;
+    }
+
+    public static void initializeFlightRoutes(Route[] flt, int totalRoutes, String[] city){
+        String[] trafficTypes = {"low", "busy", "moderate"};
+        int[] routeCodes = generateRandomArray(totalRoutes, 999, 9999);
+        int[] sourceAndDestIndexPair;
+        int trafficType, srcIndex, destIndex, flightFare, flightFrequency;
+        String formattedRandomTime;
+
+        for (int i = 0; i < totalRoutes; i++) {
+            trafficType = generateRandomNumber(trafficTypes.length-1);
+            flightFare = generateRandomNumber(1200, 15000);
+            flightFrequency =  generateRandomNumber(2, 8);
+            sourceAndDestIndexPair = generateRandomArray(2, 0, city.length-1);
+            srcIndex = sourceAndDestIndexPair[0];
+            destIndex = sourceAndDestIndexPair[1];
+            formattedRandomTime = String.format("%02d:%02d:00", generateRandomNumber(24), generateRandomNumber(60));
+
+            flt[i] = new Route();
+            flt[i].setroute(trafficTypes[trafficType], routeCodes[i], city[srcIndex], city[destIndex], formattedRandomTime, flightFare, flightFrequency);
+        }
+    }
+
+    public static int getNumberOfTicketsToBook(Scanner sc, String className, int maxSeats) {
+        int ticketsToBeBooked = 0;
+        do {
+            System.out.print("\nHow many Tickets do you want to book in " + className + " class: ");
+            ticketsToBeBooked = sc.nextInt();
+            sc.nextLine();
+
+            if (ticketsToBeBooked <= 0 || ticketsToBeBooked > maxSeats) {
+                System.out.println("Enter a valid number of tickets between 1 and " + maxSeats + " in " + className + " class!");
+            }
+        } while (ticketsToBeBooked <= 0 || ticketsToBeBooked > maxSeats);
+
+        return ticketsToBeBooked;
+    }
+
+	public static int[] seatAvailability(Scanner sc) {
+        int[] seat = new int[3];
+        int bookedEconomyclass = 0;
+        int bookedFirstclass = 0;
+
+        int totalSeats = (int) (Math.random() * 31 + 30);
         int EconomySeats = (int) (totalSeats * 0.7);
         int FirstclassSeats = totalSeats - EconomySeats;
 
-        int freeEconomySeats = rand.nextInt(EconomySeats);
-        int freeFirstclassSeats = rand.nextInt(FirstclassSeats);
-        int totalfreeSeats = freeEconomySeats + freeFirstclassSeats;
+        int freeEconomySeats = generateRandomNumber(1, EconomySeats);
+        int freeFirstclassSeats = generateRandomNumber(1, FirstclassSeats);
+        int totalFreeSeats = freeEconomySeats + freeFirstclassSeats;
 
-        System.out.println("\n\nTotal Available Seats are : " + totalfreeSeats);
+        System.out.println("\n\nTotal Available Seats are : " + totalFreeSeats);
         System.out.println("Available  Economy Seats are : " + freeEconomySeats);
         System.out.println("Available First Class Seats are : " + freeFirstclassSeats);
 
@@ -246,126 +288,117 @@ public class AirlineTicketReservationSystem {
         int choice = sc.nextInt();
         sc.nextLine();
 
+        String className = (choice == 0) ? "Economy" : "First class";
+
+        int maxSeats = (choice == 0) ? freeEconomySeats : freeFirstclassSeats;
+        int ticketsToBeBooked = getNumberOfTicketsToBook(sc, className, maxSeats);
+
         if (choice == 0) {
-            System.out.print("\n\nHow many Tickets do you want to book : ");
-            int tnum1 = sc.nextInt();
-            sc.nextLine();
-            if (tnum1 > 0 && tnum1 <= freeEconomySeats) {
-                bookedEconomyclass = tnum1;
-                System.out.println("Booked Economy Seats are : " + bookedEconomyclass);
-                seat[0] = bookedEconomyclass;
-                seat[1] = 0;
-                seat[2] = 1;
-            } else {
-                System.out.println("Enter Valid Number Of Tickets!!");
-            }
-        } else if (choice == 1) {
-            System.out.print("\nHow many Tickets do you want to book : ");
-            int tnum2 = sc.nextInt();
-            sc.nextLine();
-            if (tnum2 > 0 && tnum2 <= freeFirstclassSeats) {
-                bookedFirstclass = tnum2;
-                System.out.println("Booked First class Seats are : " + bookedFirstclass);
-                seat[0] = bookedFirstclass;
-                seat[1] = 1;
-                seat[2] = 1;
-            } else {
-                System.out.println("Enter Valid Number Of Tickets!!");
-            }
+            bookedEconomyclass = ticketsToBeBooked;
         } else {
-            System.out.println("Enter Valid Choice!!");
+            bookedFirstclass = ticketsToBeBooked;
         }
 
+        seat[0] = Math.max(bookedEconomyclass, bookedFirstclass);
+        seat[1] = choice;
+        seat[2] = 1;
+
+        System.out.println("Booked " + className + " Seats are : " + seat[0]);
         return seat;
     }
 
-    public static String getTravelDate(Scanner sc, String pdate, String nextdate, DateTimeFormatter df) {
-        LocalDate user_date = null;
+    public static String getTravelDate(Scanner sc, String presentDate, String nextDate, DateTimeFormatter df) {
+        LocalDate userDate = null;
+        LocalDate startDate = LocalDate.parse(presentDate, df);
+        LocalDate endDate = LocalDate.parse(nextDate, df);
+
         do {
-            System.out.print("Enter date of travel between " + pdate + " to " + nextdate + " [DD-MM-YYYY] : ");
+            System.out.print("Enter date of travel between " + presentDate + " to " + nextDate + " [DD-MM-YYYY] : ");
             String dateInput = sc.nextLine();
 
             try {
-                user_date = LocalDate.parse(dateInput, df);
+                userDate = LocalDate.parse(dateInput, df);
+                if (userDate.isBefore(startDate) || userDate.isAfter(endDate)) {
+                    System.out.println("Date must be between " + presentDate + " and " + nextDate + ".");
+                    userDate = null;
+                }
             } catch (DateTimeParseException e) {
                 System.out.println("Invalid date format! Please enter a date in the format DD-MM-YYYY.");
             }
-        } while (user_date == null);
-        return df.format(user_date);
+        } while (userDate == null);
+        return df.format(userDate);
     }
 }
 
 class Route {
-	String status;
-	int routecode;
+	String trafficStatus;
+	int routeCode;
 	String src;
-	String dst;
-	String time;
+	String dest;
+	String departureTime;
 	int fare;
 	int frequency;
 
-	public void setroute(String st, int rcode, String x, String y, String tm, int fr, int fq) {
-		this.status = st;
-		this.routecode = rcode;
-		this.src = x;
-		this.dst = y;
-		this.time = tm;
-		this.fare = fr;
+	public void setroute(String st, int rcode, String src, String dst, String time, int fare, int fq) {
+		this.trafficStatus = st;
+		this.routeCode = rcode;
+		this.src = src;
+		this.dest = dst;
+		this.departureTime = time;
+		this.fare = fare;
 		this.frequency = fq;
 	}
 
 	public void getroute() {
-		System.out.println("Flight No :" + routecode);
-		System.out.println("Departure :" + src);
-		System.out.println("Arrival :" + dst);
-		System.out.println("Departure Time :" + time);
-		System.out.println("Fare per seat :" + fare);
-		System.out.println("Traffic in this route is :" + status);
-		System.out.println("This route is operated " + frequency + " times a week.");
-		System.out.println("");
+		System.out.println("Flight No: " + routeCode);
+		System.out.println("Departure: " + src);
+		System.out.println("Arrival: " + dest);
+		System.out.println("Departure Time: " + departureTime);
+		System.out.println("Fare per seat: " + fare);
+		System.out.println("Traffic in this route is: " + trafficStatus);
+		System.out.println("This route is operated " + frequency + " times a week.\n");
 	}
 }
 
 class Aircraft {
-	String modelname;
-	String type;
+	String aircraftModel;
+	String aircraftType;
 	int pcapacity;
 	int fuelcapacity;
 
-	public void setdetails(String x, String y, int pct, int fct) {
-		this.modelname = x;
-		this.type = y;
+	public void setdetails(String model, String type, int pct, int fct) {
+		this.aircraftModel = model;
+		this.aircraftType = type;
 		this.pcapacity = pct;
 		this.fuelcapacity = fct;
 	}
 
 	public void getdetails() {
-		System.out.println("Aircraft Model :" + modelname);
-		System.out.println("Aircraft Type :" + type);
-		System.out.println("Passenger Capacity :" + pcapacity);
-		System.out.println("Fuel Capacity :" + fuelcapacity + " Litres");
-		System.out.println("");
+		System.out.println("Aircraft Model: " + aircraftModel);
+		System.out.println("Aircraft Type: " + aircraftType);
+		System.out.println("Passenger Capacity: " + pcapacity);
+		System.out.println("Fuel Capacity: " + fuelcapacity + " Litres\n");
 	}
 }
 
 class Ticket {
-	int ticket, code;
-	String dot;
-	String Seat;
+	int ticketId, code;
+	String flightDate;
+	String seatType;
 	int noSeats;
 
-	public void setticket(int t, String dt, String s, int nos, int cd) {
-		this.ticket = t;
-		this.dot = dt;
-		this.Seat = s;
+	public void setticket(int ticketId, String dot, String s, int nos, int cd) {
+		this.ticketId = ticketId;
+		this.flightDate = dot;
+		this.seatType = s;
 		this.noSeats = nos;
 		this.code = cd;
 	}
 
 	public void getticket() {
-		System.out.println("\nTicket Id : " + ticket);
-		System.out.println("Flight Date :" + dot);
-		System.out.println("Seat type :" + Seat);
-		System.out.println("No of seats booked :" + noSeats);
+		System.out.println("\nTicket Id: " + ticketId);
+		System.out.println("Flight Date: " + flightDate);
+		System.out.println("Seat type: " + seatType);
+		System.out.println("No of seats booked: " + noSeats);
 	}
 }
